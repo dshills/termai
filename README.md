@@ -19,7 +19,7 @@ A terminal AI assistant.
 ```sh
 $ go install github.com/dshills/termai
 
-$ termai -init 
+$ termai -init
 
 $HOME/.termai.json configuration file created.
 1) Open the file
@@ -33,18 +33,25 @@ $HOME/.termai.json configuration file created.
 ## Usage
 
 ```sh
--ai string
-    AI to use (default "<DEFAULT FROM CONFIG>")
--dryrun
-    Output the prompt without calling the AI
--explain
-    Explain the solution returned
--ft string
-    Use prompt extensions for a specific file type
--init
-    Generate a default configuration file
--model string
-    Model to use (default "<DEFAULT FROM CONFIG>")
+Usage: termai [options] [query]
+  -color
+        Highlighted output
+  -defaults
+        Prints the default model
+  -explain
+        Explain the solution returned
+  -ft string
+        Use prompt extensions for a specific file type
+  -help
+        Print usage information
+  -init
+        Generate a default configuration file
+  -list
+        List available models
+  -model string
+        Model to use
+  -prompt
+        Output the prompt without calling the AI
 ```
 
 ## Example Usage
@@ -68,12 +75,12 @@ On whom I can always depend
 In her gentle purrs, I find peace
 Forever grateful for her sweet release
 ```
-### Dry Run
+### Prompt
 
-- dryrun: returns the prompt it would use without calling the AI
+- prompt: returns the prompt it would use without calling the AI
 - ft: Set the file type to go
 ```sh
-$ termai -ft go -dryrun Write a rope algorithm
+$ termai -ft go -prompt Write a rope algorithm
 
 I want you to act as a world-class software developer with decades of experience in go.
 I will ask you for output, and you have to give me unique, expertly written work.
@@ -85,7 +92,7 @@ Write a rope algorithm
 ### Code
 
 - ft: Set the file type to go
-- explain: Adds prompt to give a detailed explination of the generated code
+- explain: Adds prompt to give a detailed explanation of the generated code
 
 ```sh
 $ termai -ft go -explain Write a hello world application
@@ -112,5 +119,3 @@ I have chosen to use the `fmt.Println` function to print the output because it i
 This approach is simple and straightforward, making it easy to understand for beginners and experts alike. It follows the standard conventions of Go programming, making it a reliable and efficient way to print output in a Go program.
 
 ```
-
-
