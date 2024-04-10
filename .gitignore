@@ -1,0 +1,23 @@
+.idea
+.run
+vendor
+.env
+dist
+.DS_Store
+.vscode
+*.swp
+tags
+.air.toml
+
+# Multi-module support for local development only.
+go.work
+go.work.sum
+
+
+# Test & Profiling
+*.out
+
+# locally built binaries
+bin/
+build/
+tmp/
