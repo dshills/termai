@@ -1,4 +1,14 @@
-github.com/dshills/ai-manager v0.2.5 h1:a0XvE5j74SMvmrbQcoyLWB5Adwz4reh+rGwyFU4o3Yc=
-github.com/dshills/ai-manager v0.2.5/go.mod h1:0urCyH3NCVdP+VIuEIgbA2/2HR21HEIyV2pTGIb5ylE=
+github.com/alecthomas/assert/v2 v2.6.0 h1:o3WJwILtexrEUk3cUVal3oiQY2tfgr/FHWiz/v2n4FU=
+github.com/alecthomas/assert/v2 v2.6.0/go.mod h1:Bze95FyfUr7x34QZrjL+XP+0qgp/zg8yS+TtBj1WA3k=
+github.com/alecthomas/chroma/v2 v2.13.0 h1:VP72+99Fb2zEcYM0MeaWJmV+xQvz5v5cxRHd+ooU1lI=
+github.com/alecthomas/chroma/v2 v2.13.0/go.mod h1:BUGjjsD+ndS6eX37YgTchSEG+Jg9Jv1GiZs9sqPqztk=
+github.com/alecthomas/repr v0.4.0 h1:GhI2A8MACjfegCPVq9f1FLvIBS+DrQ2KQBFZP1iFzXc=
+github.com/alecthomas/repr v0.4.0/go.mod h1:Fr0507jx4eOXV7AlPV6AVZLYrLIuIeSOWtW57eE/O/4=
+github.com/dlclark/regexp2 v1.11.0 h1:G/nrcoOa7ZXlpoa/91N3X7mM3r8eIlMBBJZvsz/mxKI=
+github.com/dlclark/regexp2 v1.11.0/go.mod h1:DHkYz0B9wPfa6wondMfaivmHpzrQ3v9q8cnmRbL6yW8=
+github.com/dshills/ai-manager v0.2.6 h1:7gFsPDI0SCgnKfWUgDodydGqEMKLrcAI73vrMm1pbso=
+github.com/dshills/ai-manager v0.2.6/go.mod h1:0urCyH3NCVdP+VIuEIgbA2/2HR21HEIyV2pTGIb5ylE=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/hexops/gotextdiff v1.0.3 h1:gitA9+qJrrTCsiCl7+kh75nPqQt1cx4ZkudSTLoUqJM=
+github.com/hexops/gotextdiff v1.0.3/go.mod h1:pSWU5MAI3yDq+fZBTazCSJysOMbxWL1BSow5/V2vxeg=

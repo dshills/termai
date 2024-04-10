@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"strings"
+
+	"github.com/dshills/ai-manager/ai"
 )
 
 const (
@@ -13,8 +15,9 @@ const (
 )
 
 type Configuration struct {
-	Models  []Model  `json:"models"`
-	Prompts []Prompt `json:"prompts"`
+	Models   []Model  `json:"models"`
+	Prompts  []Prompt `json:"prompts"`
+	aiModels []ai.Model
 }
 
 type Model struct {
@@ -66,11 +69,33 @@ func (c Configuration) explain(ft string, shouldExplain bool) string {
 	return ""
 }
 
-func (c Configuration) DefaultModel() Model {
+func (c Configuration) DefaultModel() string {
 	for _, m := range c.Models {
 		if m.Default {
-			return m
+			return m.Model
 		}
 	}
-	return Model{}
+	return ""
+}
+
+func (c Configuration) AIModels() []ai.Model {
+	return c.aiModels
+}
+
+func (c Configuration) GetAIModel(modName string) (*ai.Model, error) {
+	modName = strings.ToLower(modName)
+	for _, mod := range c.aiModels {
+		if modName == strings.ToLower(mod.Model) {
+			return &mod, nil
+		}
+	}
+	return nil, fmt.Errorf("model not found")
+}
+
+func (c Configuration) ListModels() []string {
+	models := []string{}
+	for _, mod := range c.aiModels {
+		models = append(models, mod.Model)
+	}
+	return models
 }

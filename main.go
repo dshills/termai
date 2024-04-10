@@ -7,11 +7,6 @@ import (
 	"strings"
 
 	"github.com/dshills/ai-manager/ai"
-	"github.com/dshills/ai-manager/aigen/anthropic"
-	"github.com/dshills/ai-manager/aigen/gemini"
-	"github.com/dshills/ai-manager/aigen/mistral"
-	"github.com/dshills/ai-manager/aigen/ollama"
-	"github.com/dshills/ai-manager/aigen/openai"
 )
 
 const (
@@ -24,125 +19,133 @@ const (
 
 func main() {
 	fileType := ""
+	defaults := false
 	explain := false
-	dryRun := false
+	prompt := false
 	init := false
-	aiName := ""
+	list := false
+	help := false
 	aiModel := ""
+	color := false
 	flag.StringVar(&fileType, "ft", fileType, "Use prompt extensions for a specific file type")
-	flag.BoolVar(&dryRun, "dryrun", dryRun, "Output the prompt without calling the AI")
+	flag.BoolVar(&prompt, "prompt", prompt, "Output the prompt without calling the AI")
 	flag.BoolVar(&explain, "explain", explain, "Explain the solution returned")
 	flag.BoolVar(&init, "init", init, "Generate a default configuration file")
+	flag.BoolVar(&list, "list", list, "List available models")
+	flag.BoolVar(&defaults, "defaults", defaults, "Prints the default model")
+	flag.BoolVar(&help, "help", help, "Print usage information")
+	flag.BoolVar(&color, "color", color, "Highlighted output")
+	flag.StringVar(&aiModel, "model", aiModel, "Model to use")
+	flag.Parse()
 
-	conf, err := LoadDefault()
-	if err != nil {
-		flag.StringVar(&aiName, "ai", aiName, "AI to use")
-		flag.StringVar(&aiModel, "model", aiModel, "Model to use")
-		flag.Parse()
-		if init {
-			if err := InitializeDefConfig(); err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-			fmt.Println("$HOME/.termai.json configuration file created.")
-			fmt.Println("1) Open the file")
-			fmt.Println("2) Add your API keys")
-			fmt.Println("3) Mark models you wish to use as Active")
-			fmt.Println("4) Mark one model as Default (Can be overridden)")
-			fmt.Println("5) Add any langugae specfic prompts to the \"prompts\" section")
-			os.Exit(0)
+	if init {
+		if err := InitializeDefConfig(); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
 		}
+		fmt.Println("$HOME/.termai.json configuration file created.")
+		fmt.Println("1) Open the file")
+		fmt.Println("2) Add your API keys")
+		fmt.Println("3) Mark models you wish to use as Active")
+		fmt.Println("4) Mark one model as Default (Can be overridden)")
+		fmt.Println("5) Add any langugae specfic prompts to the \"prompts\" section")
+		os.Exit(0)
+	}
+	query := strings.Join(flag.Args(), " ")
+
+	conf, err := LoadDefaultConfig()
+	if err != nil {
 		fmt.Println(err)
+		fmt.Println("Usage: termai [options] [query]")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
 	defModel := conf.DefaultModel()
-	aiName = defModel.Name
-	aiModel = defModel.Model
 
-	flag.StringVar(&aiName, "ai", aiName, "AI to use")
-	flag.StringVar(&aiModel, "model", aiModel, "Model to use")
-	flag.Parse()
-
-	if init {
-		fmt.Println("Configuration already exists")
+	// Defaults: Print out defaults
+	if defaults {
+		if defModel == "" {
+			fmt.Println("No default set")
+		} else {
+			fmt.Println(defModel)
+		}
+		os.Exit(0)
+	}
+	// List:  List Models
+	if list {
+		for _, m := range conf.ListModels() {
+			fmt.Println(m)
+		}
+		os.Exit(0)
+	}
+	// Help: Print usage
+	if help {
+		fmt.Println("Usage: termai [options] [query]")
 		flag.PrintDefaults()
-		os.Exit(1)
+		os.Exit(0)
 	}
 
-	query := strings.Join(flag.Args(), " ")
-
-	if aiName == "" || aiModel == "" {
-		fmt.Println("No default model set")
-		flag.PrintDefaults()
-		os.Exit(1)
-	}
+	// At this point we need a query
 	if query == "" {
 		fmt.Println("You didn't ask anything")
+		fmt.Println("Usage: termai [options] [query]")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-
+	// If specifc ft generate an advanced prompt
 	if fileType != "" {
 		query = conf.Prompt(query, fileType, explain)
 	}
-
-	if dryRun {
+	// Prompt: Print the prompt without running
+	if prompt {
 		fmt.Println(query)
 		os.Exit(0)
 	}
 
+	if aiModel == "" {
+		aiModel = defModel
+	}
+	if aiModel == "" {
+		fmt.Println("No default model set")
+		fmt.Println("Usage: termai [options] [query]")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
+	// Start the AI
 	aimgr := ai.New()
 
-	models := makeModels(conf)
-	if err := aimgr.RegisterGenerators(models...); err != nil {
+	if err := aimgr.RegisterGenerators(conf.AIModels()...); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	tData := ai.ThreadData{AIName: aiName, Model: aiModel}
+	aimod, err := conf.GetAIModel(aiModel)
+	if err != nil {
+		fmt.Printf("model %v not found\n", aiModel)
+		os.Exit(1)
+	}
+
+	tData := ai.ThreadData{AIName: aimod.AIName, Model: aimod.Model}
 	thread, err := aimgr.NewThread(tData)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("%s %s %v\n", aimod.AIName, aimod.Model, err)
 		os.Exit(1)
 	}
 
 	resp, err := thread.Converse(query)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("%s %s %v\n", aimod.AIName, aimod.Model, err)
 		os.Exit(1)
 	}
 
-	fmt.Println(resp.Message.Text)
-}
-
-func makeGenerator(aiName string) (ai.Generator, error) {
-	switch strings.ToLower(aiName) {
-	case aiOpenAI:
-		return openai.New(), nil
-	case aiGemini:
-		return gemini.New(), nil
-	case aiOllama:
-		return ollama.New(), nil
-	case aiMistral:
-		return mistral.New(), nil
-	case aiAnthropic:
-		return anthropic.New(), nil
-	}
-	return nil, fmt.Errorf("generator for %v not found", aiName)
-}
-
-func makeModels(conf *Configuration) []ai.Model {
-	models := []ai.Model{}
-	for _, m := range conf.Models {
-		gen, err := makeGenerator(m.Name)
-		if err != nil {
-			fmt.Println(err)
-			continue
+	if color {
+		fmtOut := FormatCodeResponse(resp.Message.Text)
+		if fmtOut != "" {
+			fmt.Println(fmtOut)
+			os.Exit(0)
 		}
-		mod := ai.Model{AIName: m.Name, Model: m.Model, APIKey: m.APIKey, BaseURL: m.BaseURL, Generator: gen}
-		models = append(models, mod)
 	}
-	return models
+	fmt.Println(resp.Message.Text)
 }
