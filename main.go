@@ -27,15 +27,19 @@ func main() {
 	help := false
 	aiModel := ""
 	color := false
-	flag.StringVar(&fileType, "ft", fileType, "Use prompt extensions for a specific file type")
-	flag.BoolVar(&prompt, "prompt", prompt, "Output the prompt without calling the AI")
+	optprompt := false
+	optpromptsend := false
+	flag.BoolVar(&color, "color", color, "Highlighted output")
+	flag.BoolVar(&defaults, "defaults", defaults, "Prints the default model")
 	flag.BoolVar(&explain, "explain", explain, "Explain the solution returned")
+	flag.BoolVar(&help, "help", help, "Print usage information")
 	flag.BoolVar(&init, "init", init, "Generate a default configuration file")
 	flag.BoolVar(&list, "list", list, "List available models")
-	flag.BoolVar(&defaults, "defaults", defaults, "Prints the default model")
-	flag.BoolVar(&help, "help", help, "Print usage information")
-	flag.BoolVar(&color, "color", color, "Highlighted output")
+	flag.BoolVar(&prompt, "prompt", prompt, "Output the prompt without calling the AI")
+	flag.BoolVar(&optprompt, "opt-prompt", optprompt, "Using the selected model try and optimize the prompt")
+	flag.BoolVar(&optpromptsend, "opt-prompt-send", optpromptsend, "Optimize the prompt and then use it")
 	flag.StringVar(&aiModel, "model", aiModel, "Model to use")
+	flag.StringVar(&fileType, "ft", fileType, "Use prompt extensions for a specific file type")
 	flag.Parse()
 
 	if init {
@@ -95,7 +99,11 @@ func main() {
 	}
 	// If specifc ft generate an advanced prompt
 	if fileType != "" {
-		query = conf.Prompt(query, fileType, explain)
+		query = promptInject(query, fileType, explain, conf.Prompts)
+	}
+	// If opt-prompt add optimization of the prompt to the prompt
+	if optprompt || optpromptsend {
+		query = optimizePrompt(query, conf.Prompts)
 	}
 	// Prompt: Print the prompt without running
 	if prompt {
@@ -138,6 +146,23 @@ func main() {
 	if err != nil {
 		fmt.Printf("%s %s %v\n", aimod.AIName, aimod.Model, err)
 		os.Exit(1)
+	}
+
+	// if opt-prompt-send optimized prompt and use it
+	if optpromptsend {
+		fmt.Println("Optimized Prompt: " + resp.Message.Text)
+		tData := ai.ThreadData{AIName: aimod.AIName, Model: aimod.Model}
+		thread, err := aimgr.NewThread(tData)
+		if err != nil {
+			fmt.Printf("%s %s %v\n", aimod.AIName, aimod.Model, err)
+			os.Exit(1)
+		}
+
+		resp, err = thread.Converse(resp.Message.Text)
+		if err != nil {
+			fmt.Printf("%s %s %v\n", aimod.AIName, aimod.Model, err)
+			os.Exit(1)
+		}
 	}
 
 	if color {

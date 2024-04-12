@@ -107,9 +107,30 @@ var defaultConfig = Configuration{
 		},
 	},
 	Prompts: []Prompt{
-		{Topic: "ALL", Prompt: "I want you to act as a world-class software developer with decades of experience in %%FILETYPE%%.\nI will ask you for output, and you have to give me unique, expertly written work.\nWrite comments for all functions and data structures."},
-		{Topic: "EXPLAIN", Prompt: "Explain, in detail, the returned code. Explain why you made the choices you did and why I would want to do it this way."},
-		{Topic: "NOEXPLAIN", Prompt: "Return only code with no explainations except code comments."},
+		{
+			Topic:  "OPT-PROMPT",
+			Prompt: "You are an expert in prompt engineering.\nRewrite this AI prompt to get the best results for code generation.\nThe text appearing inside of quotes is the prompt to be optimized.",
+		},
+		{
+			Topic:  "AI-PERSONA",
+			Prompt: "Act as a highly experienced software developer specializing in %%FILETYPE%%",
+		},
+		{
+			Topic:  "USER-PERSONA",
+			Prompt: "Explain it to a highly experienmced %%FILETYPE%% developer.",
+		},
+		{
+			Topic:  "OUTPUT",
+			Prompt: "Your work should be expertly written with unique code comments for all functions and data structures. Your task is to create fully functional and bug free code.",
+		},
+		{
+			Topic:  "EXPLAIN",
+			Prompt: "Explain, in detail, the returned code. Explain why you made the choices you did and why I would want to do it this way.",
+		},
+		{
+			Topic:  "NOEXPLAIN",
+			Prompt: "Provide only code with comments and no explanations.",
+		},
 		{Topic: "go", Prompt: ""},
 		{Topic: "react", Prompt: ""},
 		{Topic: "ts", Prompt: ""},
