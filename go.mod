@@ -4,7 +4,7 @@ go 1.22.2
 
 require (
 	github.com/alecthomas/chroma/v2 v2.13.0
-	github.com/dshills/ai-manager v0.2.6
+	github.com/dshills/ai-manager v0.2.7
 )
 
 require (

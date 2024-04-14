@@ -1,4 +1,29 @@
-package main
+package config
+
+import "fmt"
+
+func InitializeDefaults() error {
+	if err := writeDefConfig(); err != nil {
+		return err
+	}
+
+	fmt.Println("$HOME/.termai.json configuration file created.")
+	fmt.Println("1) Open the file")
+	fmt.Println("2) Add your API keys")
+	fmt.Println("3) Mark models you wish to use as Active")
+	fmt.Println("4) Mark one model as Default (Can be overridden)")
+	fmt.Println("5) Add any langugae specfic prompts to the \"prompts\" section")
+	return nil
+}
+
+func (c Configuration) DefaultModel() string {
+	for _, m := range c.Models {
+		if m.Default {
+			return m.Model
+		}
+	}
+	return ""
+}
 
 var defaultConfig = Configuration{
 	Models: []Model{

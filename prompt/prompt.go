@@ -1,8 +1,10 @@
-package main
+package prompt
 
 import (
 	"fmt"
 	"strings"
+
+	"github.com/dshills/termai/config"
 )
 
 const (
@@ -15,13 +17,19 @@ const (
 	replaceFileType      = "%%FILETYPE%%"
 )
 
-func optimizePrompt(qry string, prompts []Prompt) string {
+// Optimize will use the config defined optimizations prompts (OPT_PROMPT)
+// to generate a query that ask the AI to optimize the prompt
+func Optimize(qry string, prompts []config.Prompt) string {
 	qry = strings.ReplaceAll(qry, "\n", " ")
 	opt := extractPromptConfig(prompts, promptKeyOptPrompt, "\n")
 	return fmt.Sprintf("%s%q", opt, qry)
 }
 
-func promptInject(qry, ft string, explain bool, prompts []Prompt) string {
+// Inject will inject config defined prompt optimizations
+// Defaults AI-PERSONA, USER-PERSONA, OUTPUT
+// EXPLAIN || NOEXPLAIN
+// fileType specific
+func Inject(qry, ft string, explain bool, prompts []config.Prompt) string {
 	builder := strings.Builder{}
 
 	builder.WriteString(extractPromptConfig(prompts, promptKeyAIPersona, "\n"))
@@ -37,7 +45,7 @@ func promptInject(qry, ft string, explain bool, prompts []Prompt) string {
 	return strings.ReplaceAll(builder.String(), "%%FILETYPE%%", ft)
 }
 
-func extractPromptConfig(prompts []Prompt, key, suffix string) string {
+func extractPromptConfig(prompts []config.Prompt, key, suffix string) string {
 	for _, p := range prompts {
 		if key == p.Topic {
 			return p.Prompt + suffix

@@ -4,71 +4,40 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/dshills/ai-manager/ai"
-)
-
-const (
-	aiAnthropic = "anthropic"
-	aiOpenAI    = "openai"
-	aiGemini    = "gemini"
-	aiOllama    = "ollama"
-	aiMistral   = "mistral"
+	"github.com/dshills/termai/config"
+	"github.com/dshills/termai/prompt"
 )
 
 func main() {
-	fileType := ""
-	defaults := false
-	explain := false
-	prompt := false
-	init := false
-	list := false
-	help := false
-	aiModel := ""
-	color := false
-	optprompt := false
-	optpromptsend := false
-	flag.BoolVar(&color, "color", color, "Highlighted output")
-	flag.BoolVar(&defaults, "defaults", defaults, "Prints the default model")
-	flag.BoolVar(&explain, "explain", explain, "Explain the solution returned")
-	flag.BoolVar(&help, "help", help, "Print usage information")
-	flag.BoolVar(&init, "init", init, "Generate a default configuration file")
-	flag.BoolVar(&list, "list", list, "List available models")
-	flag.BoolVar(&prompt, "prompt", prompt, "Output the prompt without calling the AI")
-	flag.BoolVar(&optprompt, "opt-prompt", optprompt, "Using the selected model try and optimize the prompt")
-	flag.BoolVar(&optpromptsend, "opt-prompt-send", optpromptsend, "Optimize the prompt and then use it")
-	flag.StringVar(&aiModel, "model", aiModel, "Model to use")
-	flag.StringVar(&fileType, "ft", fileType, "Use prompt extensions for a specific file type")
-	flag.Parse()
+	opts := handleFlags()
 
-	if init {
-		if err := InitializeDefConfig(); err != nil {
+	if opts.InitConfig {
+		if err := config.InitializeDefaults(); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		fmt.Println("$HOME/.termai.json configuration file created.")
-		fmt.Println("1) Open the file")
-		fmt.Println("2) Add your API keys")
-		fmt.Println("3) Mark models you wish to use as Active")
-		fmt.Println("4) Mark one model as Default (Can be overridden)")
-		fmt.Println("5) Add any langugae specfic prompts to the \"prompts\" section")
 		os.Exit(0)
 	}
-	query := strings.Join(flag.Args(), " ")
 
-	conf, err := LoadDefaultConfig()
+	opts.Query += getPipedData()
+
+	conf, err := config.LoadDefault()
 	if err != nil {
+		ShowUsageAndExit(err.Error(), 1)
+	}
+
+	aimgr := ai.New()
+	if err := aimgr.RegisterGenerators(conf.Generators...); err != nil {
 		fmt.Println(err)
-		fmt.Println("Usage: termai [options] [query]")
-		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
 	defModel := conf.DefaultModel()
 
 	// Defaults: Print out defaults
-	if defaults {
+	if opts.ShowDefaults {
 		if defModel == "" {
 			fmt.Println("No default set")
 		} else {
@@ -77,95 +46,55 @@ func main() {
 		os.Exit(0)
 	}
 	// List:  List Models
-	if list {
-		for _, m := range conf.ListModels() {
+	if opts.ListModels {
+		for _, m := range conf.ActiveModels {
 			fmt.Println(m)
 		}
 		os.Exit(0)
 	}
 	// Help: Print usage
-	if help {
-		fmt.Println("Usage: termai [options] [query]")
-		flag.PrintDefaults()
-		os.Exit(0)
+	if opts.Help {
+		ShowUsageAndExit("", 0)
 	}
 
 	// At this point we need a query
-	if query == "" {
-		fmt.Println("You didn't ask anything")
-		fmt.Println("Usage: termai [options] [query]")
-		flag.PrintDefaults()
-		os.Exit(1)
+	if opts.Query == "" {
+		ShowUsageAndExit("You didn't ask anything", 1)
 	}
 	// If specifc ft generate an advanced prompt
-	if fileType != "" {
-		query = promptInject(query, fileType, explain, conf.Prompts)
+	if opts.FileType != "" {
+		opts.Query = prompt.Inject(opts.Query, opts.FileType, opts.ExplainOutput, conf.Prompts)
 	}
+
 	// If opt-prompt add optimization of the prompt to the prompt
-	if optprompt || optpromptsend {
-		query = optimizePrompt(query, conf.Prompts)
+	if opts.OptimizePrompt || opts.UseOptPrompt {
+		opts.Query = prompt.Optimize(opts.Query, conf.Prompts)
 	}
 	// Prompt: Print the prompt without running
-	if prompt {
-		fmt.Println(query)
+	if opts.ShowPrompt {
+		fmt.Println(opts.Query)
 		os.Exit(0)
 	}
 
-	if aiModel == "" {
-		aiModel = defModel
+	if opts.Model == "" {
+		opts.Model = defModel
 	}
-	if aiModel == "" {
-		fmt.Println("No default model set")
-		fmt.Println("Usage: termai [options] [query]")
-		flag.PrintDefaults()
-		os.Exit(1)
+	if opts.Model == "" {
+		ShowUsageAndExit("No model set", 1)
 	}
 
 	// Start the AI
-	aimgr := ai.New()
-
-	if err := aimgr.RegisterGenerators(conf.AIModels()...); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	aimod, err := conf.GetAIModel(aiModel)
-	if err != nil {
-		fmt.Printf("model %v not found\n", aiModel)
-		os.Exit(1)
-	}
-
-	tData := ai.ThreadData{AIName: aimod.AIName, Model: aimod.Model}
-	thread, err := aimgr.NewThread(tData)
-	if err != nil {
-		fmt.Printf("%s %s %v\n", aimod.AIName, aimod.Model, err)
-		os.Exit(1)
-	}
-
-	resp, err := thread.Converse(query)
-	if err != nil {
-		fmt.Printf("%s %s %v\n", aimod.AIName, aimod.Model, err)
-		os.Exit(1)
-	}
+	tData := ai.ThreadData{Model: opts.Model}
+	resp := converse(aimgr, tData, opts.Query)
 
 	// if opt-prompt-send optimized prompt and use it
-	if optpromptsend {
+	if opts.UseOptPrompt {
 		fmt.Println("Optimized Prompt: " + resp.Message.Text)
-		tData := ai.ThreadData{AIName: aimod.AIName, Model: aimod.Model}
-		thread, err := aimgr.NewThread(tData)
-		if err != nil {
-			fmt.Printf("%s %s %v\n", aimod.AIName, aimod.Model, err)
-			os.Exit(1)
-		}
-
-		resp, err = thread.Converse(resp.Message.Text)
-		if err != nil {
-			fmt.Printf("%s %s %v\n", aimod.AIName, aimod.Model, err)
-			os.Exit(1)
-		}
+		tData := ai.ThreadData{Model: opts.Model}
+		resp = converse(aimgr, tData, resp.Message.Text)
 	}
 
-	if color {
+	if opts.ColorOutput {
 		fmtOut := FormatCodeResponse(resp.Message.Text)
 		if fmtOut != "" {
 			fmt.Println(fmtOut)
@@ -173,4 +102,14 @@ func main() {
 		}
 	}
 	fmt.Println(resp.Message.Text)
+}
+
+func ShowUsageAndExit(msg string, exitcode int) {
+	if msg != "" {
+		fmt.Println(msg)
+	}
+	fmt.Println("Usage: termai [options] [query]")
+	flag.PrintDefaults()
+	os.Exit(exitcode)
+
 }
