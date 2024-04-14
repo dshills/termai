@@ -14,9 +14,9 @@ A terminal AI assistant.
 - Generate source code for specific languages
 - Custom language specific prompts
 
-## Instalzation
+## Initialization
 
-```sh
+```none
 $ go install github.com/dshills/termai
 
 $ termai -init
@@ -32,7 +32,7 @@ $HOME/.termai.json configuration file created.
 
 ## Usage
 
-```sh
+```none
 Usage: termai [options] [query]
   -color
         Highlighted output
@@ -61,7 +61,7 @@ Usage: termai [options] [query]
 ## Example Usage
 
 ### Basic usage
-```sh
+```none
 $ termai Write a poem about a cat named bitty
 
 Bitty the cat, small and sweet
@@ -83,7 +83,7 @@ Forever grateful for her sweet release
 
 - prompt: returns the prompt it would use without calling the AI
 - ft: Set the file type to go
-```sh
+```none
 $ termai -ft go -prompt Write a rope algorithm
 
 I want you to act as a world-class software developer with decades of experience in go.
@@ -100,33 +100,17 @@ Write a rope algorithm
 
 ```sh
 $ termai -ft go -explain Write a hello world application
+...
+Output: Hello world program with explinations of how it works
 
 ```
-Sure, here is a hello world application written in Go:
 
-```go
-package main
 
-import "fmt"
-
-// main function is the entry point of the program
-func main() {
-    // Println is a function that prints the given string to standard output
-    fmt.Println("Hello, World!")
-}
-```
-
-In this program, we have a `main` function which is the entry point of the program. Inside the `main` function, we use the `fmt.Println` function to print the string "Hello, World!" to the standard output.
-
-I have chosen to use the `fmt.Println` function to print the output because it is the standard way to print output in Go. It is easy to use and provides a flexible way to format and print strings.
-
-This approach is simple and straightforward, making it easy to understand for beginners and experts alike. It follows the standard conventions of Go programming, making it a reliable and efficient way to print output in a Go program.
-
-```
 
 ### Prompt Optimization
 
-```sh
+- opt-prompt will query the AI to improve the prompt
+```none
 $ termai -model gpt-4 -ft go -opt-prompt -prompt Write a rope algorithm
 
 You are an expert in prompt engineering.
@@ -135,58 +119,13 @@ The text appearing inside of quotes is the prompt to be optimized.
 "Act as a highly experienced software developer specializing in go Explain it to a highly experienmced go developer. Your work should be expertly written with unique code comments for all functions and data structures. Your task is to create fully functional and bug free code. Provide only code with comments and no explanations. Write a rope algorithm"
 ```
 
-```sh
+- opt-prompt-send will optimize the prompt and then use it
+```none
 $ termai -ft go -opt-prompt-send Write poem generator
 
 Optimized Prompt: "Write a poem generator in Go, showcasing expertly written code with unique comments for all functions and data structures. Aim for fully functional, bug-free code tailored for a highly experienced Go developer."
 
-package main
+...
+Ouput: generated code
 
-import (
-        "fmt"
-        "math/rand"
-        "time"
-)
-
-// Word struct to hold word options for generating a poem
-type Word struct {
-        noun    []string
-        verb    []string
-        adjective []string
-}
-
-// GeneratePoem generates a random poem using the provided words
-func GeneratePoem(words Word, numLines int) {
-        for i := 0; i < numLines; i++ {
-                line := ""
-                for j := 0; j < 4; j++ {
-                        // Randomly select a noun, verb, or adjective to construct a line
-                        switch rand.Intn(3) {
-                        case 0:
-                                line += words.noun[rand.Intn(len(words.noun))] + " "
-                        case 1:
-                                line += words.verb[rand.Intn(len(words.verb))] + " "
-                        case 2:
-                                line += words.adjective[rand.Intn(len(words.adjective))] + " "
-                        }
-                }
-                // Print the line of the poem
-                fmt.Println(line)
-        }
-}
-
-func main() {
-        // Seed the random number generator
-        rand.Seed(time.Now().UnixNano())
-
-        // Define a set of words for generating the poem
-        words := Word{
-                noun:    []string{"moon", "sun", "star", "tree", "flower"},
-                verb:    []string{"shines", "dances", "whispers", "sleeps", "blooms"},
-                adjective: []string{"bright", "beautiful", "peaceful", "vibrant", "serene"},
-        }
-
-        // Generate a 4-line poem using the provided words
-        GeneratePoem(words, 4)
-}
 ```
