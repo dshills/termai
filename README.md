@@ -46,6 +46,10 @@ Usage: termai [options] [query]
         Print usage information
   -init
         Generate a default configuration file
+  -last
+        Show last response ($HOME/.termai.last)
+  -last-prompt
+        Show last prompt used ($HOME/.termai.last.prompt)
   -list
         List available models
   -model string
@@ -56,6 +60,8 @@ Usage: termai [options] [query]
         Optimize the prompt and then use it
   -prompt
         Output the prompt without calling the AI
+  -use-last
+        Include the last prompt and response in query
 ```
 
 ## Example Usage
