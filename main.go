@@ -13,6 +13,25 @@ import (
 func main() {
 	opts := handleFlags()
 
+	if opts.ShowLast {
+		lastResp, err := lastResponse()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		fmt.Println(lastResp)
+		os.Exit(0)
+	}
+	if opts.ShowLastPrompt {
+		lastPrompt, err := lastPrompt()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		fmt.Println(lastPrompt)
+		os.Exit(0)
+	}
+
 	if opts.InitConfig {
 		if err := config.InitializeDefaults(); err != nil {
 			fmt.Println(err)
@@ -83,8 +102,22 @@ func main() {
 		ShowUsageAndExit("No model set", 1)
 	}
 
+	conv := ai.Conversation{}
+	if opts.UseLast {
+		lastPrompt, err := lastPrompt()
+		if err == nil && lastPrompt != "" {
+			msg := ai.Message{Role: "user", Text: lastPrompt}
+			conv = append(conv, msg)
+		}
+		lastResp, err := lastResponse()
+		if err == nil && lastResp != "" {
+			msg := ai.Message{Role: "assistant", Text: lastResp}
+			conv = append(conv, msg)
+		}
+	}
+
 	// Start the AI
-	tData := ai.ThreadData{Model: opts.Model}
+	tData := ai.ThreadData{Model: opts.Model, Conversation: conv}
 	resp := converse(aimgr, tData, opts.Query)
 
 	// if opt-prompt-send optimized prompt and use it
@@ -102,6 +135,14 @@ func main() {
 		}
 	}
 	fmt.Println(resp.Message.Text)
+	if err := savePrompt(opts.Query); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	if err := saveResponse(resp.Message.Text); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func ShowUsageAndExit(msg string, exitcode int) {

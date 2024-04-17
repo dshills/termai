@@ -15,6 +15,9 @@ type Options struct {
 	ShowDefaults   bool
 	ShowPrompt     bool
 	UseOptPrompt   bool
+	ShowLast       bool
+	ShowLastPrompt bool
+	UseLast        bool
 	FileType       string
 	Model          string
 	Query          string
@@ -31,6 +34,9 @@ func handleFlags() Options {
 	flag.BoolVar(&opts.ShowPrompt, "prompt", false, "Output the prompt without calling the AI")
 	flag.BoolVar(&opts.OptimizePrompt, "opt-prompt", false, "Using the selected model try and optimize the prompt")
 	flag.BoolVar(&opts.UseOptPrompt, "opt-prompt-send", false, "Optimize the prompt and then use it")
+	flag.BoolVar(&opts.ShowLast, "last", false, "Show last response ($HOME/.termai.last)")
+	flag.BoolVar(&opts.UseLast, "use-last", false, "Include the last prompt and response in query")
+	flag.BoolVar(&opts.ShowLastPrompt, "last-prompt", false, "Show last prompt used ($HOME/.termai.last.prompt)")
 	flag.StringVar(&opts.Model, "model", "", "Model to use")
 	flag.StringVar(&opts.FileType, "ft", "", "Use prompt extensions for a specific file type")
 	flag.Parse()
