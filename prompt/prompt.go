@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/dshills/ai-manager/ai"
 	"github.com/dshills/termai/config"
 )
 
@@ -19,10 +20,19 @@ const (
 
 // Optimize will use the config defined optimizations prompts (OPT_PROMPT)
 // to generate a query that ask the AI to optimize the prompt
-func Optimize(qry string, prompts []config.Prompt) string {
+func Optimize(qry string, prompts []config.Prompt, gen ai.Generator) (string, error) {
 	qry = strings.ReplaceAll(qry, "\n", " ")
 	opt := extractPromptConfig(prompts, promptKeyOptPrompt, "\n")
-	return fmt.Sprintf("%s%q", opt, qry)
+	qry = fmt.Sprintf("%s%q", opt, qry)
+	conv := ai.Conversation{{Role: "user", Text: qry}}
+	resp, err := gen.Generate(conv, nil, nil)
+	if err != nil {
+		return "", err
+	}
+	prompt := strings.ReplaceAll(resp.Message.Text, "\n", "")
+	prompt = strings.ReplaceAll(prompt, "\t", "")
+	prompt = strings.ReplaceAll(prompt, "\"", "")
+	return prompt, err
 }
 
 // Inject will inject config defined prompt optimizations

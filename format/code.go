@@ -1,4 +1,4 @@
-package main
+package format
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"github.com/alecthomas/chroma/v2/styles"
 )
 
-func FormatCodeResponse(text string) string {
+func Response(text string) string {
 	sections := []string{}
 
 	for _, block := range extractCodeBlocks(text) {

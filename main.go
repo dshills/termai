@@ -5,33 +5,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dshills/ai-manager/ai"
 	"github.com/dshills/termai/config"
-	"github.com/dshills/termai/prompt"
 )
 
 func main() {
-	opts := handleFlags()
+	opts := getFlags()
 
-	if opts.ShowLast {
-		lastResp, err := lastResponse()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		fmt.Println(lastResp)
-		os.Exit(0)
-	}
-	if opts.ShowLastPrompt {
-		lastPrompt, err := lastPrompt()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		fmt.Println(lastPrompt)
-		os.Exit(0)
-	}
-
+	// Create defaults
 	if opts.InitConfig {
 		if err := config.InitializeDefaults(); err != nil {
 			fmt.Println(err)
@@ -40,106 +20,67 @@ func main() {
 		os.Exit(0)
 	}
 
-	opts.Query += getPipedData()
-
+	// load config
 	conf, err := config.LoadDefault()
 	if err != nil {
 		ShowUsageAndExit(err.Error(), 1)
 	}
 
-	aimgr := ai.New()
-	if err := aimgr.RegisterGenerators(conf.Generators...); err != nil {
+	// Create the ai
+	aimgr, err := newAI(conf.Generators, conf, opts)
+	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	defModel := conf.DefaultModel()
-
-	// Defaults: Print out defaults
-	if opts.ShowDefaults {
-		if defModel == "" {
-			fmt.Println("No default set")
-		} else {
-			fmt.Println(defModel)
-		}
+	// Print the conversation
+	if opts.PrintConv {
+		aimgr.printConv()
 		os.Exit(0)
 	}
+
+	// Print the default model
+	if opts.PrintDefModel {
+		aimgr.printDefaultModel()
+		os.Exit(0)
+	}
+
 	// List:  List Models
 	if opts.ListModels {
-		for _, m := range conf.ActiveModels {
-			fmt.Println(m)
-		}
+		aimgr.listModels()
 		os.Exit(0)
 	}
+
 	// Help: Print usage
 	if opts.Help {
 		ShowUsageAndExit("", 0)
 	}
 
-	// At this point we need a query
-	if opts.Query == "" {
+	// --- Query ---
+	query := opts.Query
+	if query == "" {
 		ShowUsageAndExit("You didn't ask anything", 1)
 	}
-	// If specifc ft generate an advanced prompt
-	if opts.FileType != "" {
-		opts.Query = prompt.Inject(opts.Query, opts.FileType, opts.ExplainOutput, conf.Prompts)
-	}
 
-	// If opt-prompt add optimization of the prompt to the prompt
-	if opts.OptimizePrompt || opts.UseOptPrompt {
-		opts.Query = prompt.Optimize(opts.Query, conf.Prompts)
-	}
-	// Prompt: Print the prompt without running
-	if opts.ShowPrompt {
-		fmt.Println(opts.Query)
-		os.Exit(0)
-	}
-
-	if opts.Model == "" {
-		opts.Model = defModel
-	}
-	if opts.Model == "" {
-		ShowUsageAndExit("No model set", 1)
-	}
-
-	conv := ai.Conversation{}
-	if opts.UseLast {
-		lastPrompt, err := lastPrompt()
-		if err == nil && lastPrompt != "" {
-			msg := ai.Message{Role: "user", Text: lastPrompt}
-			conv = append(conv, msg)
-		}
-		lastResp, err := lastResponse()
-		if err == nil && lastResp != "" {
-			msg := ai.Message{Role: "assistant", Text: lastResp}
-			conv = append(conv, msg)
-		}
-	}
-
-	// Start the AI
-	tData := ai.ThreadData{Model: opts.Model, Conversation: conv}
-	resp := converse(aimgr, tData, opts.Query)
-
-	// if opt-prompt-send optimized prompt and use it
-	if opts.UseOptPrompt {
-		fmt.Println("Optimized Prompt: " + resp.Message.Text)
-		tData := ai.ThreadData{Model: opts.Model}
-		resp = converse(aimgr, tData, resp.Message.Text)
-	}
-
-	if opts.ColorOutput {
-		fmtOut := FormatCodeResponse(resp.Message.Text)
-		if fmtOut != "" {
-			fmt.Println(fmtOut)
-			os.Exit(0)
-		}
-	}
-	fmt.Println(resp.Message.Text)
-	if err := savePrompt(opts.Query); err != nil {
+	if err := aimgr.createPrompt(query); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	if err := saveResponse(resp.Message.Text); err != nil {
+
+	// Prompt: Print the prompt without running
+	if opts.PrintPrompt {
+		aimgr.printPrompt()
+		os.Exit(0)
+	}
+
+	output, err := aimgr.usePrompt()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	fmt.Println(output)
+
+	if err := aimgr.saveConv(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
