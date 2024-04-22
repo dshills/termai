@@ -36,7 +36,11 @@ $HOME/.termai.json configuration file created.
 Usage: termai [options] [query]
   -color
         Highlighted output
-  -defaults
+  -continue
+        Continue last conversation
+  -conv
+        Print the last conversation
+  -default
         Prints the default model
   -explain
         Explain the solution returned
@@ -46,22 +50,14 @@ Usage: termai [options] [query]
         Print usage information
   -init
         Generate a default configuration file
-  -last
-        Show last response ($HOME/.termai.last)
-  -last-prompt
-        Show last prompt used ($HOME/.termai.last.prompt)
   -list
         List available models
   -model string
         Model to use
-  -opt-prompt
+  -opt
         Using the selected model try and optimize the prompt
-  -opt-prompt-send
-        Optimize the prompt and then use it
   -prompt
         Output the prompt without calling the AI
-  -use-last
-        Include the last prompt and response in query
 ```
 
 ## Example Usage
@@ -115,9 +111,9 @@ Output: Hello world program with explinations of how it works
 
 ### Prompt Optimization
 
-- opt-prompt will query the AI to improve the prompt
+- opt will query the AI to improve the prompt
 ```none
-$ termai -model gpt-4 -ft go -opt-prompt -prompt Write a rope algorithm
+$ termai -ft go -opt -prompt Write a rope algorithm
 
 You are an expert in prompt engineering.
 Rewrite this AI prompt to get the best results for code generation.
@@ -125,9 +121,9 @@ The text appearing inside of quotes is the prompt to be optimized.
 "Act as a highly experienced software developer specializing in go Explain it to a highly experienmced go developer. Your work should be expertly written with unique code comments for all functions and data structures. Your task is to create fully functional and bug free code. Provide only code with comments and no explanations. Write a rope algorithm"
 ```
 
-- opt-prompt-send will optimize the prompt and then use it
+- opt will optimize the prompt and then use it
 ```none
-$ termai -ft go -opt-prompt-send Write poem generator
+$ termai -ft go -opt Write poem generator
 
 Optimized Prompt: "Write a poem generator in Go, showcasing expertly written code with unique comments for all functions and data structures. Aim for fully functional, bug-free code tailored for a highly experienced Go developer."
 

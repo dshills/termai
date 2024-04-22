@@ -18,7 +18,6 @@ type Options struct {
 	PrintConv      bool
 	PrintPrompt    bool
 	Continue       bool
-	REPL           bool
 	FileType       string
 	Model          string
 	Query          string
@@ -34,9 +33,8 @@ func getFlags() Options {
 	flag.BoolVar(&opts.ListModels, "list", false, "List available models")
 	flag.BoolVar(&opts.PrintPrompt, "prompt", false, "Output the prompt without calling the AI")
 	flag.BoolVar(&opts.OptimizePrompt, "opt", false, "Using the selected model try and optimize the prompt")
-	flag.BoolVar(&opts.REPL, "repl", false, "Start an interactive REPL")
 	flag.BoolVar(&opts.PrintConv, "conv", false, "Print the last conversation")
-	flag.BoolVar(&opts.Continue, "cont", false, "Continue last conversation")
+	flag.BoolVar(&opts.Continue, "continue", false, "Continue last conversation")
 	flag.StringVar(&opts.Model, "model", "", "Model to use")
 	flag.StringVar(&opts.FileType, "ft", "", "Use prompt extensions for a specific file type")
 	flag.Parse()
