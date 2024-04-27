@@ -20,6 +20,7 @@ type Options struct {
 	Continue       bool
 	FileType       string
 	Model          string
+	Out            string
 	Query          string
 }
 
@@ -36,6 +37,7 @@ func getFlags() Options {
 	flag.BoolVar(&opts.PrintConv, "conv", false, "Print the last conversation")
 	flag.BoolVar(&opts.Continue, "continue", false, "Continue last conversation")
 	flag.StringVar(&opts.Model, "model", "", "Model to use")
+	flag.StringVar(&opts.Out, "out", "", "Output file path")
 	flag.StringVar(&opts.FileType, "ft", "", "Use prompt extensions for a specific file type")
 	flag.Parse()
 

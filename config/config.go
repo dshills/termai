@@ -26,16 +26,18 @@ type Configuration struct {
 	Models       []Model  `json:"models"`
 	Prompts      []Prompt `json:"prompts"`
 	Generators   []ai.Generator
-	ActiveModels []string
+	ActiveModels []Model
 }
 
 type Model struct {
-	Name     string `json:"name"`
-	Model    string `json:"model"`
-	APIKey   string `json:"api_key"`
-	BaseURL  string `json:"base_url"`
-	Inactive bool   `json:"inactive"`
-	Default  bool   `json:"default"`
+	Name        string   `json:"name"`
+	Aliases     []string `json:"aliases"`
+	Description string   `json:"desc"`
+	Model       string   `json:"model"`
+	APIKey      string   `json:"api_key"`
+	BaseURL     string   `json:"base_url"`
+	Inactive    bool     `json:"inactive"`
+	Default     bool     `json:"default"`
 }
 
 type Prompt struct {
@@ -62,7 +64,7 @@ func LoadDefault() (*Configuration, error) {
 				continue
 			}
 			conf.Generators = append(conf.Generators, gen)
-			conf.ActiveModels = append(conf.ActiveModels, mod.Model)
+			conf.ActiveModels = append(conf.ActiveModels, mod)
 		}
 	}
 	return conf, nil

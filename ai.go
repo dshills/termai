@@ -43,6 +43,7 @@ func newAI(generators []ai.Generator, conf *config.Configuration, opts Options) 
 	if aim.model == "" {
 		aim.model = conf.DefaultModel()
 	}
+	aim.model = modelFromAlias(conf, aim.model)
 
 	// set default generator
 	aim.defGenerator(generators)
@@ -96,7 +97,11 @@ func (a *AI) printDefaultModel() {
 
 func (a *AI) listModels() {
 	for _, m := range a.conf.ActiveModels {
-		fmt.Println(m)
+		if m.Default {
+			fmt.Printf("(*) %s %v: %v\n", m.Model, m.Aliases, m.Description)
+			continue
+		}
+		fmt.Printf("( ) %s %v: %v\n", m.Model, m.Aliases, m.Description)
 	}
 }
 
@@ -184,4 +189,18 @@ func convLocation() (string, error) {
 		return "", err
 	}
 	return fn, nil
+}
+
+func modelFromAlias(conf *config.Configuration, mname string) string {
+	for _, mod := range conf.Models {
+		if strings.EqualFold(mod.Model, mname) {
+			return mod.Model
+		}
+		for _, alias := range mod.Aliases {
+			if strings.EqualFold(alias, mname) {
+				return mod.Model
+			}
+		}
+	}
+	return mname
 }

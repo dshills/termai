@@ -76,6 +76,15 @@ var defaultConfig = Configuration{
 			Default:  false,
 		},
 		{
+			Name:        "OpenAI",
+			Model:       "llama3-70b-8192",
+			Description: "Groq high speed hosted",
+			APIKey:      "",
+			BaseURL:     "https://api.groq.com/openai/v1",
+			Inactive:    true,
+			Default:     false,
+		},
+		{
 			Name:     "Mistral",
 			Model:    "mistral-small-latest",
 			APIKey:   "",

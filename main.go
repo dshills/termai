@@ -78,7 +78,18 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	fmt.Println(output)
+
+	if opts.Out != "" {
+		file, err := os.Create(opts.Out)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		defer file.Close()
+		_, _ = file.WriteString(output)
+	} else {
+		fmt.Println(output)
+	}
 
 	if err := aimgr.saveConv(); err != nil {
 		fmt.Println(err)
