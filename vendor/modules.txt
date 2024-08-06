@@ -1,0 +1,24 @@
+# github.com/alecthomas/chroma/v2 v2.13.0
+## explicit; go 1.19
+github.com/alecthomas/chroma/v2
+github.com/alecthomas/chroma/v2/formatters
+github.com/alecthomas/chroma/v2/formatters/html
+github.com/alecthomas/chroma/v2/formatters/svg
+github.com/alecthomas/chroma/v2/lexers
+github.com/alecthomas/chroma/v2/styles
+# github.com/dlclark/regexp2 v1.11.0
+## explicit; go 1.13
+github.com/dlclark/regexp2
+github.com/dlclark/regexp2/syntax
+# github.com/dshills/ai-manager v0.2.7
+## explicit; go 1.22.1
+github.com/dshills/ai-manager/ai
+github.com/dshills/ai-manager/aigen/anthropic
+github.com/dshills/ai-manager/aigen/gemini
+github.com/dshills/ai-manager/aigen/mistral
+github.com/dshills/ai-manager/aigen/ollama
+github.com/dshills/ai-manager/aigen/openai
+github.com/dshills/ai-manager/aitool
+# github.com/google/uuid v1.6.0
+## explicit
+github.com/google/uuid

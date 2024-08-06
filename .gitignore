@@ -1,6 +1,5 @@
 .idea
 .run
-vendor
 .env
 dist
 .DS_Store
